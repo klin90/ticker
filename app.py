@@ -9,10 +9,14 @@ import requests
 app = Flask(__name__)
 app.vars = {}
 INDEX_TITLE = 'Stock Ticker Demo'
-COLORS = {'adj_close': 'darkblue',
-          'adj_open': 'darkgreen',
-          'close': 'lightblue',
-          'open': 'lightgreen'}
+COLOR = {'adj_close': 'darkblue',
+         'adj_open': 'darkgreen',
+         'close': 'lightblue',
+         'open': 'lightgreen'}
+DESC = {'adj_close': 'Adj. Closing Price',
+        'adj_open': 'Adj. Opening Price',
+        'close': 'Closing Price',
+        'open': 'Opening Price'}
 TOOLS = 'pan, wheel_zoom, box_zoom, reset, save'
 
 def request_info(ticker, query, hist):
@@ -25,8 +29,8 @@ def request_info(ticker, query, hist):
     keys = {'ticker': ticker, 'date.gte': start, 'date.lt': today,
             'qopts.columns': ','.join(query), 'api_key': 'BcQQP1z-ERr55WK5ZDxG'}
 
-    r = requests.get('https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json', params=keys)
-    
+    r = requests.get('https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json',
+                     params=keys)
     j = json.loads(r.text)
     cols = [d['name'] for d in j['datatable']['columns']]
     df = pd.DataFrame(j['datatable']['data'], columns=cols).set_index('date')
@@ -36,11 +40,15 @@ def request_info(ticker, query, hist):
     
     p = figure(tools=TOOLS, title='{} - Last {} Days'.format(ticker, hist),
            x_axis_label='Date', x_axis_type='datetime')
-    for col in df.columns:
-        p.line(pd.to_datetime(df.index), df[col], legend=col.title(), line_width=2, line_color=COLORS[col])
 
-    title = '{} Quotes - Last {} Days'.format(ticker, hist)
-    return p, title
+    for col in df.columns:
+        p.line(pd.to_datetime(df.index), df[col], legend=DESC[col],
+               line_color=COLOR[col], line_width=1)
+
+    p.legend.location = 'bottom_right'
+
+    page_title = '{} Quotes - Last {} Days'.format(ticker, hist)
+    return p, page_title
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -52,6 +60,7 @@ def index():
         app.vars['hist'] = request.form.get('hist')
         app.vars['features'] = request.form.getlist('features')
         
+        # Error Checking
         if len(app.vars['features']) == 0:
             errors.append('You must check at least one value.')
         if app.vars['ticker'] == '':
@@ -61,13 +70,15 @@ def index():
         if len(errors) > 0:
             return render_template('index.html', title=index_title, errors=errors)
         
-        plot, title = request_info(app.vars['ticker'], app.vars['features'], int(app.vars['hist']))
+        plot, page_title = request_info(app.vars['ticker'], app.vars['features'],
+                                        int(app.vars['hist']))
+        
         if plot is None:
             errors.append('No data exists for this company and date range.')
             return render_template('index.html', title=INDEX_TITLE, errors=errors)
         
         script, div = components(plot)
-        return render_template('index.html', title=title, script=script, div=div)
+        return render_template('index.html', title=page_title, script=script, div=div)
     else:
         return render_template('index.html', title=INDEX_TITLE)
 
