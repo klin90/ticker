@@ -7,7 +7,6 @@ import numpy as np
 import requests
 
 app = Flask(__name__)
-app.vars = {}
 INDEX_TITLE = 'Stock Ticker Demo'
 COLOR = {'adj_close': 'darkblue',
          'adj_open': 'darkgreen',
@@ -20,9 +19,6 @@ DESC = {'adj_close': 'Adj. Closing Price',
 TOOLS = 'pan, wheel_zoom, box_zoom, reset, save'
 
 def request_info(ticker, query, hist):
-    hist = min(hist, 120)
-    query.append('date')
-    
     today = str(np.datetime64('today', 'D'))
     start = str(np.datetime64('today', 'D') - np.timedelta64(hist, 'D'))
     
@@ -39,7 +35,7 @@ def request_info(ticker, query, hist):
         return None, None
     
     p = figure(tools=TOOLS, title='{} - Last {} Days'.format(ticker, hist),
-           x_axis_label='Date', x_axis_type='datetime')
+           x_axis_label='Date', x_axis_type='datetime', responsive=True)
 
     for col in df.columns:
         p.line(pd.to_datetime(df.index), df[col], legend=DESC[col],
@@ -56,29 +52,35 @@ def request_info(ticker, query, hist):
 def index():
     if request.method == 'POST':
         errors = []
-        app.vars['ticker'] = request.form.get('ticker')
-        app.vars['hist'] = request.form.get('hist')
-        app.vars['features'] = request.form.getlist('features')
+        notices = []
+        ticker = request.form.get('ticker')
+        hist = request.form.get('hist')
+        query = request.form.getlist('features')
         
         # Error Checking
-        if len(app.vars['features']) == 0:
-            errors.append('You must check at least one value.')
-        if app.vars['ticker'] == '':
+        if ticker == '':
             errors.append('No company specified.')
-        if not app.vars['hist'].isdigit():
+        if not hist.isdigit():
             errors.append('Invalid history length.')
+        if len(query) == 0:
+            errors.append('You must check at least one value.')
         if len(errors) > 0:
-            return render_template('index.html', title=index_title, errors=errors)
+            return render_template('index.html', title=INDEX_TITLE, errors=errors)
         
-        plot, page_title = request_info(app.vars['ticker'], app.vars['features'],
-                                        int(app.vars['hist']))
+        query.append('date')
+        hist = int(hist)
+        if hist > 180:
+            notices.append('Note: Only displaying last 180 days.')
+            hist = 180
+        
+        plot, page_title = request_info(ticker, query, hist)
         
         if plot is None:
             errors.append('No data exists for this company and date range.')
             return render_template('index.html', title=INDEX_TITLE, errors=errors)
         
         script, div = components(plot)
-        return render_template('index.html', title=page_title, script=script, div=div)
+        return render_template('index.html', title=page_title, script=script, div=div, notices=notices)
     else:
         return render_template('index.html', title=INDEX_TITLE)
 

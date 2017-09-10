@@ -1,81 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-      <title>{{ title }}</title>
+        <title>{{ title }}</title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
-    {% if script %}
-    <link rel="stylesheet" href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.7.min.css" type="text/css" />
-    <script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.7.min.js"></script>
-    {{ script|safe }}
-    {% endif %}
-    </head>
-  <body>
-
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container">
-          <a class="navbar-brand" href="#">Ticker</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item active">
-              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-            </li>
-          <li class="nav-item">
-              <a class="nav-link" href="https://github.com/klin90/ticker">GitHub</a>
-            </li>
-          </ul>
-          </div>
-        </div>
-      </nav>
-
-    <div class="container">
-      <div class="row justify-content-center">
-        {% if div %}
-        <div class="col-md-auto">
-            {{ div|safe }}
-          <p>Source: Quandl WIKI EOD Stock Prices (2017)</p>
-          </div>
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
+              integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+        {% if script %}
+        <link rel="stylesheet" href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.7.min.css" type="text/css" />
+        <script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.7.min.js"></script>
+        {{ script|safe }}
         {% endif %}
-        <div class="col-md-auto">
-          {% for e in errors %}
-          <div class="alert alert-danger">
-              {{ e }}
-            </div>
-          {% endfor %}
-          <form id='input' method='post'>
-              <p>Ticker Symbol: <input type='text' name='ticker' placeholder='GOOG' /></p>
-              <p>Length of History (up to 120): <input type='text' name='hist' placeholder='30' /></p>
-              <div>
-                  <input type="checkbox" id='open' name='features' value='open' />
-                  <label for='open'>Opening Price</label><br>
-                  <input type="checkbox" id='close' name='features' value='close' />
-                  <label for='close'>Closing Price</label><br>
-                  <input type="checkbox" id='adj_open' name='features' value='adj_open' />
-                  <label for='adj_open'>Adjusted Opening Price</label><br>
-                  <input type="checkbox" id='adj_close' name='features' value='adj_close' />
-                  <label for='adj_close'>Adjusted Closing Price</label><br>
+    </head>
+    <body>
+
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-3" role="navigation">
+            <div class="container">
+                <a class="navbar-brand" href="#">Ticker</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav1"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="nav1">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://github.com/klin90/ticker">GitHub</a>
+                        </li>
+                    </ul>
                 </div>
-              <p><input type="submit" value="Submit"></p>
-            </form>
-          </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row justify-content-center">
+                {% if div %}
+                <div class="col-sm-6">
+                    <div class="row">
+                        {{ div|safe }}
+                    </div>
+                    <div class="row small">
+                        Source: Quandl WIKI EOD Stock Prices (2017)
+                    </div>
+                </div>
+                {% endif %}
+                <div class="col-sm-6 px-5">
+                    <div class="row">
+                        {% if errors %}
+                        <div class="alert alert-danger">
+                            {% for error in errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if notices %}
+                        <div class="alert alert-warning">
+                        {% for notice in notices %}
+                            {{ notice }}<br>
+                        {% endfor %}
+                        </div>
+                        {% endif %}
+                        <form id="input" method="post">
+                            <div class="form-group row">
+                                <label class="col-sm-6 col-form-label" for="ticker">Ticker Symbol</label>
+                                <div class="col-sm-6">
+                                    <input class="form-control" type="text" id="ticker" name="ticker" placeholder="GOOG" />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-6 col-form-label" for="hist">Length of History</label>
+                                <div class="col-sm-6">
+                                    <input class="form-control" type="number" id="hist" name="hist" placeholder="180" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-check">
+                                        <label class="form-check-label" for="open">
+                                            <input class="form-check-input" type="checkbox" id="open"
+                                                   name="features" value="open" />
+                                            Opening Price
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <label class="form-check-label" for="close">
+                                            <input class="form-check-input" type="checkbox" id="close"
+                                                   name="features" value="close" />
+                                            Closing Price
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <label class="form-check-label" for="adj_open">
+                                            <input class="form-check-input" type="checkbox" id="adj_open"
+                                                   name="features" value="adj_open" />
+                                            Adjusted Opening Price
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <label class="form-check-label" for="adj_close">
+                                            <input class="form-check-input" type="checkbox" id="adj_close"
+                                                   name="features" value="adj_close" />
+                                            Adjusted Closing Price
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <input class="btn btn-primary float-right" type="submit" value="Submit" />
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+                integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+                crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
+                integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
+                crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"
+                integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1"
+                crossorigin="anonymous"></script>
     </body>
 </html>
 
